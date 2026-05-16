@@ -15,6 +15,11 @@ enum PlayState { welcome, playing, gameOver, won }
 
 class BrickBreaker extends FlameGame
     with HasCollisionDetection, KeyboardEvents, TapDetector {
+  
+  late Sprite batSprite;
+  late Sprite ballSprite;
+  late Sprite backgroundSprite;
+
   BrickBreaker()
     : super(
         camera: CameraComponent.withFixedResolution(
@@ -23,8 +28,10 @@ class BrickBreaker extends FlameGame
         ),
       );
 
-  final ValueNotifier<int> score = ValueNotifier(0);            
+  final ValueNotifier<int> score = ValueNotifier(0);
+  final ValueNotifier<int> lives = ValueNotifier(3);
   final rand = math.Random();
+  
   double get width => size.x;
   double get height => size.y;
 
@@ -50,8 +57,11 @@ class BrickBreaker extends FlameGame
 
     camera.viewfinder.anchor = Anchor.topLeft;
 
-    world.add(PlayArea());
+    batSprite = await Sprite.load('bat_sprite.png');
+    ballSprite = await Sprite.load('ball_sprite.png');
+    backgroundSprite = await Sprite.load('background.jpg'); 
 
+    world.add(PlayArea(sprite: backgroundSprite));
     playState = PlayState.welcome;
   }
 
@@ -63,10 +73,13 @@ class BrickBreaker extends FlameGame
     world.removeAll(world.children.query<Brick>());
 
     playState = PlayState.playing;
-    score.value = 0;                                           
+    
+    score.value = 0;
+    lives.value = 3;
 
     world.add(
       Ball(
+        sprite: ballSprite,
         difficultyModifier: difficultyModifier,
         radius: ballRadius,
         position: size / 2,
@@ -79,8 +92,8 @@ class BrickBreaker extends FlameGame
 
     world.add(
       Bat(
-        size: Vector2(batWidth, batHeight),
-        cornerRadius: const Radius.circular(ballRadius / 2),
+        sprite: batSprite,
+        size: Vector2(batWidth, batHeight * 2),
         position: Vector2(width / 2, height * 0.95),
       ),
     );
